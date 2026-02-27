@@ -1,9 +1,25 @@
-/* Bestaande styles behouden en dit toevoegen: */
+:root {
+    --board-blue: #2c3e50;
+    --empty: #ecf0f1;
+    --red: #e74c3c;
+    --yellow: #f1c40f;
+}
+
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    overflow: hidden;
+}
 
 .overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(44, 62, 80, 0.95);
+    background: rgba(44, 62, 80, 0.98);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,23 +31,41 @@
     padding: 30px;
     border-radius: 15px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 80%;
+    max-width: 300px;
 }
-
-.menu-content h1 { color: var(--board-blue); margin-top: 0; }
 
 .menu-content button {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 15px;
-    font-weight: bold;
-    font-size: 1.1rem;
+    display: block; width: 100%; margin: 10px 0;
+    padding: 15px; background: var(--board-blue);
+    color: white; border: none; border-radius: 8px;
+    font-weight: bold; font-size: 1rem;
 }
 
-.button-row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
+.game-container { text-align: center; width: 95vw; max-width: 400px; }
+
+#scoreboard {
+    background: white; padding: 10px; border-radius: 8px;
+    margin-bottom: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#board {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background-color: var(--board-blue); padding: 10px;
+    border-radius: 10px; gap: 8px;
+}
+
+.cell { aspect-ratio: 1/1; background-color: var(--empty); border-radius: 50%; }
+.cell.red { background-color: var(--red); }
+.cell.yellow { background-color: var(--yellow); }
+.cell.active-column { border: 2px solid white; transform: scale(1.05); }
+
+#status { margin: 15px 0; font-weight: bold; font-size: 1.2rem; }
+.red { color: var(--red); }
+.yellow { color: var(--yellow); }
+
+.button-row { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+.button-row button { 
+    padding: 10px 20px; background: var(--board-blue); 
+    color: white; border: none; border-radius: 5px; 
 }
