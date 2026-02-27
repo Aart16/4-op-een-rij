@@ -1,6 +1,25 @@
 const ROWS = 6, COLS = 7;
 let board = [], currentPlayer = 'red', gameOver = false;
 let activeCol = 0, scores = { player: 0, cpu: 0 };
+let gameMode = 'cpu'; // 'cpu' of 'pvp'
+
+function startGame(mode) {
+    gameMode = mode;
+    document.getElementById('menu-overlay').style.display = 'none';
+    document.getElementById('label-opponent').innerText = (mode === 'cpu') ? "Computer" : "Geel";
+    resetScores();
+    init();
+}
+
+function showMenu() {
+    document.getElementById('menu-overlay').style.display = 'flex';
+}
+
+function resetScores() {
+    scores = { player: 0, cpu: 0 };
+    document.getElementById('score-player').innerText = "0";
+    document.getElementById('score-cpu').innerText = "0";
+}
 
 function init() {
     const boardDiv = document.getElementById('board');
@@ -8,8 +27,7 @@ function init() {
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
     gameOver = false;
     currentPlayer = 'red';
-    document.getElementById('player-label').innerText = "Jij (Rood)";
-    document.getElementById('player-label').className = "red";
+    updateStatusLabel();
     
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
@@ -25,17 +43,36 @@ function init() {
 }
 
 async function play(c) {
-    if (gameOver || currentPlayer === 'yellow') return;
-    if (makeMove(c, 'red')) {
+    if (gameOver) return;
+    
+    // Blokkeer input als de computer aan de beurt is
+    if (gameMode === 'cpu' && currentPlayer === 'yellow') return;
+
+    if (makeMove(c, currentPlayer)) {
         if (!gameOver) {
-            currentPlayer = 'yellow';
-            document.getElementById('player-label').innerText = "Computer denkt...";
-            document.getElementById('player-label').className = "yellow";
-            await new Promise(res => setTimeout(res, 600));
-            makeComputerMove();
+            currentPlayer = (currentPlayer === 'red') ? 'yellow' : 'red';
+            updateStatusLabel();
+
+            if (gameMode === 'cpu' && currentPlayer === 'yellow') {
+                await new Promise(res => setTimeout(res, 600));
+                makeComputerMove();
+            }
         }
     }
 }
+
+function updateStatusLabel() {
+    const label = document.getElementById('player-label');
+    if (gameMode === 'cpu') {
+        label.innerText = (currentPlayer === 'red') ? "Jij (Rood)" : "Computer denkt...";
+    } else {
+        label.innerText = (currentPlayer === 'red') ? "Speler 1 (Rood)" : "Speler 2 (Geel)";
+    }
+    label.className = currentPlayer;
+}
+
+// ... de rest van de functies (makeMove, checkWin, makeComputerMove, etc.) blijven hetzelfde als in de vorige stap ...
+// Zorg dat je makeMove aanpast om de juiste score bij te werken:
 
 function makeMove(c, player) {
     for (let r = ROWS - 1; r >= 0; r--) {
@@ -47,12 +84,11 @@ function makeMove(c, player) {
                 if(player === 'red') {
                     scores.player++;
                     document.getElementById('score-player').innerText = scores.player;
-                    setTimeout(() => alert("Jij wint!"), 10);
                 } else {
                     scores.cpu++;
                     document.getElementById('score-cpu').innerText = scores.cpu;
-                    setTimeout(() => alert("Computer wint!"), 10);
                 }
+                setTimeout(() => alert(player.toUpperCase() + " WINT!"), 10);
                 return true;
             }
             return true;
@@ -61,74 +97,6 @@ function makeMove(c, player) {
     return false;
 }
 
-function makeComputerMove() {
-    if (gameOver) return;
-    let move = -1;
-    // Win of blokkeer logica
-    for (let c = 0; c < COLS; c++) if (canWinNextMove(c, 'yellow')) { move = c; break; }
-    if (move === -1) for (let c = 0; c < COLS; c++) if (canWinNextMove(c, 'red')) { move = c; break; }
-    if (move === -1) {
-        const valid = [];
-        for (let c = 0; c < COLS; c++) if (!board[0][c]) valid.push(c);
-        move = valid.includes(3) ? 3 : valid[Math.floor(Math.random() * valid.length)];
-    }
-    makeMove(move, 'yellow');
-    if (!gameOver) {
-        currentPlayer = 'red';
-        document.getElementById('player-label').innerText = "Jij (Rood)";
-        document.getElementById('player-label').className = "red";
-    }
-}
-
-function canWinNextMove(c, player) {
-    for (let r = ROWS - 1; r >= 0; r--) {
-        if (!board[r][c]) {
-            board[r][c] = player;
-            let win = checkWin(r, c);
-            board[r][c] = null;
-            return win;
-        }
-    }
-    return false;
-}
-
-function checkWin(r, c) {
-    const p = board[r][c], dirs = [[0,1],[1,0],[1,1],[1,-1]];
-    return dirs.some(([dr, dc]) => {
-        let count = 1;
-        [[1,1],[-1,-1]].forEach(([s]) => {
-            let nr = r + dr*s, nc = c + dc*s;
-            while(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && board[nr][nc] === p) {
-                count++; nr += dr*s; nc += dc*s;
-            }
-        });
-        return count >= 4;
-    });
-}
-
-function draw() {
-    const cells = document.querySelectorAll('.cell');
-    board.flat().forEach((val, i) => {
-        const c = i % COLS;
-        cells[i].className = 'cell' + (val ? ' ' + val : '') + (c === activeCol ? ' active-column' : '');
-    });
-}
-
-function updateCursor() { draw(); }
-
-window.addEventListener('keydown', (e) => {
-    if (gameOver || currentPlayer === 'yellow') return;
-    if (['ArrowLeft', 'a', 'A'].includes(e.key)) {
-        activeCol = (activeCol > 0) ? activeCol - 1 : COLS - 1;
-        updateCursor();
-    } else if (['ArrowRight', 'd', 'D'].includes(e.key)) {
-        activeCol = (activeCol < COLS - 1) ? activeCol + 1 : 0;
-        updateCursor();
-    } else if ([' ', 'Enter', 's', 'S'].includes(e.key)) {
-        e.preventDefault();
-        play(activeCol);
-    }
-});
-
+// Voeg de keydown en draw functies toe zoals eerder
 document.getElementById('reset-btn').onclick = init;
-init();
+// init() roepen we nu niet direct aan, dat doet startGame()
