@@ -3,6 +3,7 @@
     --empty: #ecf0f1;
     --red: #e74c3c;
     --yellow: #f1c40f;
+    --drop-speed: 0.5s;
 }
 
 body {
@@ -15,32 +16,23 @@ body {
     background-color: #f0f0f0;
 }
 
-.overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(44, 62, 80, 0.98);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-.menu-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    width: 260px;
-}
-
-.menu-content button {
-    width: 100%; margin: 10px 0; padding: 12px;
-    background: var(--board-blue); color: white;
-    border: none; border-radius: 8px; cursor: pointer;
-    font-weight: bold;
-}
-
 .game-container { text-align: center; width: 95vw; max-width: 400px; }
+
+/* De container voor het zwevende fiche */
+#preview-container {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    padding: 0 10px;
+    height: 50px;
+    margin-bottom: 5px;
+}
+
+.preview-cell {
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    opacity: 0.6;
+}
 
 #board {
     display: grid;
@@ -49,20 +41,41 @@ body {
     padding: 10px;
     border-radius: 10px;
     gap: 8px;
-    min-height: 300px; /* Zorgt dat het bord niet inklapt */
+    position: relative;
+    overflow: hidden;
 }
 
-.cell { aspect-ratio: 1/1; background-color: var(--empty); border-radius: 50%; }
-.cell.red { background-color: var(--red); }
-.cell.yellow { background-color: var(--yellow); }
-.cell.active-column { border: 2px solid white; transform: scale(1.02); }
+.cell {
+    aspect-ratio: 1/1;
+    background-color: var(--empty);
+    border-radius: 50%;
+    position: relative;
+    z-index: 2;
+}
 
-#status { margin: 15px 0; font-weight: bold; font-size: 1.2rem; min-height: 1.5em; }
-.red { color: var(--red); }
-.yellow { color: var(--yellow); }
+/* De animatie klasse */
+.token {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 1;
+    animation: drop var(--drop-speed) cubic-bezier(0.5, 0, 0.5, 1);
+}
 
+.red { background-color: var(--red); }
+.yellow { background-color: var(--yellow); }
+
+@keyframes drop {
+    0% { transform: translateY(-400px); }
+    100% { transform: translateY(0); }
+}
+
+/* Overlay & Scoreboard (hetzelfde als voorheen) */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.98); display: flex; justify-content: center; align-items: center; z-index: 100; }
+.menu-content { background: white; padding: 30px; border-radius: 15px; text-align: center; width: 260px; }
+.menu-content button { width: 100%; margin: 10px 0; padding: 12px; background: var(--board-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+#scoreboard { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+#status { margin: 15px 0; font-weight: bold; font-size: 1.2rem; }
 .button-row { display: flex; gap: 5px; justify-content: center; margin-top: 15px; }
-.button-row button { 
-    padding: 8px 12px; background: var(--board-blue); 
-    color: white; border: none; border-radius: 5px; font-size: 0.8rem;
-}
+.button-row button { padding: 8px 12px; background: var(--board-blue); color: white; border: none; border-radius: 5px; }

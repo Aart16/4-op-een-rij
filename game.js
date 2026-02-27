@@ -16,51 +16,90 @@ function resetScores() {
     document.getElementById('score-cpu').innerText = "0";
 }
 
-async function init() {
+function init() {
     const boardDiv = document.getElementById('board');
     boardDiv.innerHTML = '';
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
     gameOver = false;
     
-    // LOTING: Wie begint?
     currentPlayer = Math.random() < 0.5 ? 'red' : 'yellow';
     
-    for (let i = 0; i < ROWS * COLS; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.dataset.col = i % COLS;
-        cell.onclick = () => play(parseInt(cell.dataset.col));
-        boardDiv.appendChild(cell);
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.id = `cell-${r}-${c}`;
+            cell.onclick = () => play(c);
+            boardDiv.appendChild(cell);
+        }
     }
     
+    createPreviewCells();
     updateStatusLabel();
     draw();
 
-    // Als de computer begint
     if (gameMode === 'cpu' && currentPlayer === 'yellow') {
-        await new Promise(res => setTimeout(res, 800));
-        makeComputerMove();
+        setTimeout(makeComputerMove, 1000);
     }
 }
 
-function play(c) {
+function createPreviewCells() {
+    const container = document.getElementById('preview-container') || document.createElement('div');
+    container.id = 'preview-container';
+    container.innerHTML = '';
+    for (let c = 0; c < COLS; c++) {
+        const pCell = document.createElement('div');
+        pCell.className = 'preview-cell';
+        pCell.id = `preview-${c}`;
+        container.appendChild(pCell);
+    }
+    if (!document.getElementById('preview-container')) {
+        document.getElementById('board').before(container);
+    }
+}
+
+function updatePreview() {
+    for (let c = 0; c < COLS; c++) {
+        const pCell = document.getElementById(`preview-${c}`);
+        pCell.className = 'preview-cell';
+        if (c === activeCol && !gameOver && (gameMode !== 'cpu' || currentPlayer === 'red')) {
+            pCell.classList.add(currentPlayer);
+        }
+    }
+}
+
+async function play(c) {
     if (gameOver || (gameMode === 'cpu' && currentPlayer === 'yellow')) return;
-    if (makeMove(c, currentPlayer)) {
+    activeCol = c;
+    if (await makeMove(c, currentPlayer)) {
         if (!gameOver) {
             currentPlayer = (currentPlayer === 'red') ? 'yellow' : 'red';
             updateStatusLabel();
+            updatePreview();
             if (gameMode === 'cpu' && currentPlayer === 'yellow') {
-                setTimeout(makeComputerMove, 600);
+                setTimeout(makeComputerMove, 800);
             }
         }
     }
 }
 
-function makeMove(c, player) {
-    // Klassieke zwaartekracht: zoek onderste rij
+async function makeMove(c, player) {
     for (let r = ROWS - 1; r >= 0; r--) {
         if (!board[r][c]) {
             board[r][c] = player;
+            
+            // Animatie: plaats een tijdelijke 'token' in de cel
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            const token = document.createElement('div');
+            token.className = `token ${player}`;
+            
+            // Bereken de afstand voor de animatie (optioneel voor variabele snelheid)
+            // Hier gebruiken we de standaard CSS animatie
+            cell.appendChild(token);
+
+            // Wacht tot de animatie klaar is voor de win-check
+            await new Promise(res => setTimeout(res, 500));
+
             draw();
             if (checkWin(r, c)) {
                 gameOver = true;
@@ -78,7 +117,6 @@ function makeMove(c, player) {
 function makeComputerMove() {
     if (gameOver) return;
     let move = -1;
-    // Slimme zet: win of blokkeer
     for (let c = 0; c < COLS; c++) if (canWinNextMove(c, 'yellow')) { move = c; break; }
     if (move === -1) for (let c = 0; c < COLS; c++) if (canWinNextMove(c, 'red')) { move = c; break; }
     if (move === -1) {
@@ -86,8 +124,14 @@ function makeComputerMove() {
         for (let c = 0; c < COLS; c++) if (!board[0][c]) valid.push(c);
         move = valid.includes(3) ? 3 : valid[Math.floor(Math.random() * valid.length)];
     }
-    makeMove(move, 'yellow');
-    if (!gameOver) { currentPlayer = 'red'; updateStatusLabel(); }
+    activeCol = move;
+    makeMove(move, 'yellow').then((success) => {
+        if (success && !gameOver) {
+            currentPlayer = 'red';
+            updateStatusLabel();
+            updatePreview();
+        }
+    });
 }
 
 function canWinNextMove(c, p) {
@@ -114,27 +158,31 @@ function checkWin(r, c) {
 }
 
 function draw() {
-    const cells = document.querySelectorAll('.cell');
-    board.flat().forEach((val, i) => {
-        const c = i % COLS;
-        cells[i].className = 'cell' + (val ? ' ' + val : '') + (c === activeCol ? ' active-column' : '');
-    });
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            cell.innerHTML = ''; // Verwijder animatie tokens
+            if (board[r][c]) {
+                const disc = document.createElement('div');
+                disc.className = `token ${board[r][c]}`;
+                disc.style.animation = 'none'; // Geen animatie voor bestaande fiches
+                cell.appendChild(disc);
+            }
+        }
+    }
+    updatePreview();
 }
 
 function updateStatusLabel() {
     const l = document.getElementById('player-label');
-    if (gameMode === 'cpu') {
-        l.innerText = (currentPlayer === 'red') ? "Jij bent aan de beurt" : "Computer denkt na...";
-    } else {
-        l.innerText = (currentPlayer === 'red') ? "Rood is aan de beurt" : "Geel is aan de beurt";
-    }
+    l.innerText = (currentPlayer === 'red') ? "Jij bent aan de beurt" : (gameMode === 'cpu' ? "Computer denkt..." : "Geel is aan de beurt");
     l.className = currentPlayer;
 }
 
 window.addEventListener('keydown', (e) => {
     if (gameOver || (gameMode === 'cpu' && currentPlayer === 'yellow')) return;
-    if (['ArrowLeft', 'a'].includes(e.key)) { activeCol = (activeCol > 0) ? activeCol - 1 : COLS - 1; draw(); }
-    if (['ArrowRight', 'd'].includes(e.key)) { activeCol = (activeCol < COLS - 1) ? activeCol + 1 : 0; draw(); }
+    if (['ArrowLeft', 'a'].includes(e.key)) { activeCol = (activeCol > 0) ? activeCol - 1 : COLS - 1; updatePreview(); }
+    if (['ArrowRight', 'd'].includes(e.key)) { activeCol = (activeCol < COLS - 1) ? activeCol + 1 : 0; updatePreview(); }
     if ([' ', 'Enter', 's', 'ArrowDown'].includes(e.key)) { e.preventDefault(); play(activeCol); }
 });
 
