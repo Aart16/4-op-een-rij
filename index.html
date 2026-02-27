@@ -14,7 +14,7 @@
             <h1>4 op een rij</h1>
             <p>Kies je speelmodus:</p>
             <button onclick="startGame('cpu')">Tegen Computer</button>
-            <button onclick="startGame('pvp')">Tegen Vriend (Lokaal)</button>
+            <button onclick="startGame('pvp')">Tegen Vriend</button>
         </div>
     </div>
 
@@ -23,10 +23,11 @@
         <div id="scoreboard">
             Rood: <span id="score-player">0</span> | <span id="label-opponent">CPU</span>: <span id="score-cpu">0</span>
         </div>
-        <div id="status">Beurt aan: <span id="player-label" class="red">Jij</span></div>
+        <div id="status">Beurt: <span id="player-label" class="red">Laden...</span></div>
         <div id="board"></div>
         <div class="button-row">
-            <button id="reset-btn">Reset</button>
+            <button id="reset-btn">Nieuw Spel</button>
+            <button onclick="resetScores()">Reset Score</button>
             <button onclick="showMenu()">Menu</button>
         </div>
     </div>
@@ -34,9 +35,7 @@
     <script src="game.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>

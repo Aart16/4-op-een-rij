@@ -13,7 +13,6 @@ body {
     min-height: 100vh;
     margin: 0;
     background-color: #f0f0f0;
-    overflow: hidden;
 }
 
 .overlay {
@@ -31,28 +30,24 @@ body {
     padding: 30px;
     border-radius: 15px;
     text-align: center;
-    width: 80%;
-    max-width: 300px;
+    width: 250px;
 }
 
-.menu-content button {
-    display: block; width: 100%; margin: 10px 0;
-    padding: 15px; background: var(--board-blue);
-    color: white; border: none; border-radius: 8px;
-    font-weight: bold; font-size: 1rem;
-}
-
-.game-container { text-align: center; width: 95vw; max-width: 400px; }
-
-#scoreboard {
-    background: white; padding: 10px; border-radius: 8px;
-    margin-bottom: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.game-container { 
+    text-align: center; 
+    width: 95vw; 
+    max-width: 400px;
+    display: block !important; /* Forceert zichtbaarheid */
 }
 
 #board {
-    display: grid; grid-template-columns: repeat(7, 1fr);
-    background-color: var(--board-blue); padding: 10px;
-    border-radius: 10px; gap: 8px;
+    display: grid !important; /* Forceert grid */
+    grid-template-columns: repeat(7, 1fr);
+    background-color: var(--board-blue);
+    padding: 10px;
+    border-radius: 10px;
+    gap: 8px;
+    min-height: 300px;
 }
 
 .cell { aspect-ratio: 1/1; background-color: var(--empty); border-radius: 50%; }
@@ -64,8 +59,8 @@ body {
 .red { color: var(--red); }
 .yellow { color: var(--yellow); }
 
-.button-row { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+.button-row { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 15px; }
 .button-row button { 
-    padding: 10px 20px; background: var(--board-blue); 
-    color: white; border: none; border-radius: 5px; 
+    padding: 8px 12px; background: var(--board-blue); 
+    color: white; border: none; border-radius: 5px; font-size: 0.9rem;
 }
