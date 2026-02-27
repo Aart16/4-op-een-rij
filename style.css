@@ -10,12 +10,21 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     background-color: #f0f0f0;
 }
 
 .game-container { text-align: center; width: 95vw; max-width: 400px; }
+
+#scoreboard {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 
 #board {
     display: grid;
@@ -37,16 +46,23 @@ body {
 .cell.red { background-color: var(--red); }
 .cell.yellow { background-color: var(--yellow); }
 
-#status { margin-bottom: 15px; font-weight: bold; font-size: 1.2rem; }
+/* Cursor effect voor toetsenbord */
+.cell.active-column {
+    border: 2px solid rgba(255,255,255,0.8);
+    transform: scale(1.05);
+}
+
+#status { margin: 15px 0; font-weight: bold; font-size: 1.2rem; }
 .red { color: var(--red); }
 .yellow { color: var(--yellow); }
 
 button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 1rem;
+    padding: 12px 25px;
     background: var(--board-blue);
     color: white;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
 }
+
+.controls-hint { font-size: 0.8rem; color: #7f8c8d; margin-top: 10px; }
