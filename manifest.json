@@ -1,0 +1,9 @@
+{
+  "name": "4 Op Een Rij",
+  "short_name": "4opRij",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f0f0f0",
+  "description": "Klassiek 4 op een rij spel voor Android.",
+  "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/566/566312.png", "sizes": "512x512", "type": "image/png" }]
+}
