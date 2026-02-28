@@ -61,7 +61,6 @@ body {
     position: absolute;
     z-index: 1;
     animation: drop var(--drop-speed) cubic-bezier(0.5, 0, 0.5, 1);
-    animation-duration:.5s;
 }
 
 .red { background-color: var(--red); }
