@@ -1,11 +1,12 @@
 const ROWS = 6, COLS = 7;
 let board = [], currentPlayer = 'red', gameOver = false;
-let activeCol = 3, scores = { player: 0, cpu: 0 }, gameMode = 'cpu';
+let activeCol = 3, scores = { player: 0, cpu: 0 }, gameMode = 'Geel';
+let isAnimating = false;
 
 function startGame(mode) {
     gameMode = mode;
     document.getElementById('menu-overlay').style.display = 'none';
-    document.getElementById('label-opponent').innerText = (mode === 'cpu') ? "CPU" : "Geel";
+    document.getElementById('label-opponent').innerText = (mode === 'Geel') ? "Geel" : "Geel";
     init();
 }
 
@@ -13,7 +14,7 @@ function showMenu() { document.getElementById('menu-overlay').style.display = 'f
 function resetScores() {
     scores = { player: 0, cpu: 0 };
     document.getElementById('score-player').innerText = "0";
-    document.getElementById('score-cpu').innerText = "0";
+    document.getElementById('score-Computer').innerText = "0";
 }
 
 function init() {
@@ -69,17 +70,28 @@ function updatePreview() {
 }
 
 async function play(c) {
-    if (gameOver || (gameMode === 'cpu' && currentPlayer === 'yellow')) return;
+    // Voeg 'isAnimating' toe aan de check
+    if (gameOver || isAnimating || (gameMode === 'cpu' && currentPlayer === 'yellow')) return;
+    
     activeCol = c;
+    isAnimating = true; // Vergrendel input
+
     if (await makeMove(c, currentPlayer)) {
         if (!gameOver) {
             currentPlayer = (currentPlayer === 'red') ? 'yellow' : 'red';
             updateStatusLabel();
             updatePreview();
+            
             if (gameMode === 'cpu' && currentPlayer === 'yellow') {
                 setTimeout(makeComputerMove, 800);
+            } else {
+                isAnimating = false; // Ontgrendel voor de tweede speler
             }
+        } else {
+            isAnimating = false;
         }
+    } else {
+        isAnimating = false; // Ontgrendel als de kolom vol was
     }
 }
 
