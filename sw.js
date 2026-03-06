@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vier-op-een-rij-v2'; // <--- VERANDER DIT
+const CACHE_NAME = 'vier-op-een-rij-v3';
 const ASSETS = [
   './',
   './index.html',
