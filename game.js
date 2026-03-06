@@ -12,14 +12,21 @@ function startGame(mode) {
 
 function showMenu() { document.getElementById('menu-overlay').style.display = 'flex'; }
 
+// HIER IS DE RESET SCORE FUNCTIE
+function resetScores() {
+    scores = { player: 0, cpu: 0 };
+    document.getElementById('score-player').innerText = "0";
+    document.getElementById('score-cpu').innerText = "0";
+    init(); // Start ook direct een schoon potje
+}
+
 async function init() {
     const boardDiv = document.getElementById('board');
     boardDiv.innerHTML = '';
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
     gameOver = false;
-    isAnimating = false; 
+    isAnimating = false; // FORCEER OPEN
     
-    // Kies willekeurige starter
     currentPlayer = Math.random() < 0.5 ? 'red' : 'yellow';
     
     for (let r = 0; r < ROWS; r++) {
@@ -36,7 +43,6 @@ async function init() {
     updateStatusLabel();
     draw();
 
-    // Als geel (CPU) begint, trigger move
     if (gameMode === 'cpu' && currentPlayer === 'yellow') {
         isAnimating = true;
         setTimeout(makeComputerMove, 1000);
@@ -60,14 +66,11 @@ function createPreviewCells() {
 }
 
 async function play(c) {
-    // 1. Check of we mogen zetten
     if (gameOver || isAnimating) return;
     if (gameMode === 'cpu' && currentPlayer === 'yellow') return;
 
-    // 2. Doe de zet
     const success = await makeMove(c, currentPlayer);
     
-    // 3. Wissel beurt als zet gelukt is en spel niet klaar is
     if (success && !gameOver) {
         currentPlayer = (currentPlayer === 'red') ? 'yellow' : 'red';
         updateStatusLabel();
@@ -75,17 +78,17 @@ async function play(c) {
         if (gameMode === 'cpu' && currentPlayer === 'yellow') {
             setTimeout(makeComputerMove, 400);
         } else {
-            isAnimating = false; // Menselijke beurt: nu mag er weer geklikt worden
+            isAnimating = false; 
         }
-    } else if (!success) {
-        isAnimating = false; // Kolom vol, klik opnieuw
+    } else {
+        isAnimating = false; 
     }
 }
 
 async function makeMove(c, player) {
     for (let r = ROWS - 1; r >= 0; r--) {
         if (!board[r][c]) {
-            isAnimating = true; // LOCK
+            isAnimating = true; 
             board[r][c] = player;
             
             const cell = document.getElementById(`cell-${r}-${c}`);
@@ -93,47 +96,41 @@ async function makeMove(c, player) {
             token.className = `token ${player}`;
             cell.appendChild(token);
 
-            // Wacht op animatie
+            // FAIL-SAFE: Als er na 1 seconde nog steeds 'lock' op zit, haal hem eraf
+            setTimeout(() => { if(!gameOver && gameMode !== 'cpu') isAnimating = false; }, 1000);
+
             await new Promise(res => setTimeout(res, 500));
 
-            // Fixeer het fiche op het bord
             draw(); 
 
-            // Win check
             if (checkWin(r, c)) {
                 gameOver = true;
                 if(player === 'red') scores.player++; else scores.cpu++;
                 document.getElementById('score-player').innerText = scores.player;
                 document.getElementById('score-cpu').innerText = scores.cpu;
                 updateStatusLabel();
-                setTimeout(() => {
-                    alert((player === 'red' ? "Rood" : "Geel") + " wint!");
-                    isAnimating = false;
-                }, 100);
+                setTimeout(() => alert((player === 'red' ? "Rood" : "Geel") + " wint!"), 50);
+                isAnimating = false;
                 return true;
             }
             
-            // Bord vol check
             if (board.flat().every(cell => cell !== null)) {
                 gameOver = true;
-                setTimeout(() => {
-                    alert("Gelijkspel!");
-                    isAnimating = false;
-                }, 100);
+                setTimeout(() => alert("Gelijkspel!"), 50);
+                isAnimating = false;
                 return true;
             }
 
-            return true; // Zet gelukt
+            return true;
         }
     }
-    return false; // Kolom vol
+    return false;
 }
 
 async function makeComputerMove() {
-    if (gameOver) return;
+    if (gameOver) { isAnimating = false; return; }
     
     let move = -1;
-    // AI Logica
     for (let c = 0; c < COLS; c++) if (canWinNextMove(c, 'yellow')) { move = c; break; }
     if (move === -1) for (let c = 0; c < COLS; c++) if (canWinNextMove(c, 'red')) { move = c; break; }
     if (move === -1) {
@@ -144,12 +141,12 @@ async function makeComputerMove() {
     }
     
     activeCol = move;
-    const success = await makeMove(move, 'yellow');
+    await makeMove(move, 'yellow');
     
-    if (success && !gameOver) {
+    if (!gameOver) {
         currentPlayer = 'red';
         updateStatusLabel();
-        isAnimating = false; // OPEN LOCK
+        isAnimating = false; 
     }
 }
 
@@ -209,11 +206,7 @@ function updatePreview() {
 
 function updateStatusLabel() {
     const l = document.getElementById('player-label');
-    if (gameOver) {
-        l.innerText = "Spel afgelopen!";
-        l.className = "";
-        return;
-    }
+    if (gameOver) { l.innerText = "Spel afgelopen!"; return; }
     if (gameMode === 'cpu') {
         l.innerText = (currentPlayer === 'red') ? "Jij bent aan de beurt" : "Computer denkt na...";
     } else {
@@ -225,7 +218,6 @@ function updateStatusLabel() {
 window.addEventListener('keydown', (e) => {
     if (gameOver || isAnimating) return;
     if (gameMode === 'cpu' && currentPlayer === 'yellow') return;
-
     if (['ArrowLeft', 'a'].includes(e.key)) { activeCol = (activeCol > 0) ? activeCol - 1 : COLS - 1; updatePreview(); }
     if (['ArrowRight', 'd'].includes(e.key)) { activeCol = (activeCol < COLS - 1) ? activeCol + 1 : 0; updatePreview(); }
     if ([' ', 'Enter', 's', 'ArrowDown'].includes(e.key)) { e.preventDefault(); play(activeCol); }
