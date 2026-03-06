@@ -1,12 +1,13 @@
-const CACHE_NAME = 'vier-op-een-rij-v1';
+const CACHE_NAME = 'vier-op-een-rij-v2'; // <--- VERANDER DIT
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './game.js',
   './manifest.json',
-  'https://cdn-icons-png.flaticon.com/512/566/566312.png'
+  'https://cdn-icons-png.flaticon.com/512/566/566312.png' // Zorg dat je icoontje hier ook staat
 ];
+// ... de rest van je Service Worker code ...
 
 // Installatie: bestanden opslaan in cache
 self.addEventListener('install', (event) => {
